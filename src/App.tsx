@@ -3,10 +3,8 @@ import { AcademicData, CourseCalculationResult, GpaCourseItem, SemesterRecord, T
 import {
   clearAcademicData,
   loadAcademicData,
-  loadSavedTheme,
   resetToSampleData,
   saveAcademicData,
-  saveTheme,
 } from './utils/storage';
 import { NavTab, Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
@@ -24,7 +22,6 @@ import { calculateOverallCGPA } from './utils/calculations';
 export default function App() {
   const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
   const [academicData, setAcademicData] = useState<AcademicData>(loadAcademicData);
-  const [darkMode, setDarkMode] = useState<boolean>(() => loadSavedTheme() === 'dark');
 
   // Toasts
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -42,10 +39,34 @@ export default function App() {
     action: () => {},
   });
 
-  // Apply dark mode on initial render and changes
+  // Automatically sync with operating system / browser light/dark theme preference
   useEffect(() => {
-    saveTheme(darkMode ? 'dark' : 'light');
-  }, [darkMode]);
+    const applySystemTheme = (isDark: boolean) => {
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    };
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    applySystemTheme(mediaQuery.matches);
+
+    const handler = (e: MediaQueryListEvent) => applySystemTheme(e.matches);
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handler);
+    } else {
+      mediaQuery.addListener(handler);
+    }
+
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', handler);
+      } else {
+        mediaQuery.removeListener(handler);
+      }
+    };
+  }, []);
 
   // Toast Helper
   const addToast = useCallback(
@@ -197,8 +218,6 @@ export default function App() {
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        darkMode={darkMode}
-        setDarkMode={setDarkMode}
         onResetData={handleResetToSample}
         onClearData={handleClearAllData}
       />

@@ -2,7 +2,6 @@ import { AcademicData } from '../types';
 import { INITIAL_SAMPLE_DATA } from './sampleData';
 
 const STORAGE_KEY = 'cgpa_calculator_diu_data_v1';
-const THEME_KEY = 'cgpa_calculator_diu_theme';
 
 /**
  * Load academic data from LocalStorage or return empty structure on first visit
@@ -66,32 +65,3 @@ export function resetToSampleData(): AcademicData {
   return INITIAL_SAMPLE_DATA;
 }
 
-/**
- * Theme persistence
- */
-export function loadSavedTheme(): 'light' | 'dark' {
-  try {
-    const saved = localStorage.getItem(THEME_KEY);
-    if (saved === 'dark' || saved === 'light') return saved;
-    // Check system preference
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark';
-    }
-  } catch {
-    // Ignore error
-  }
-  return 'light';
-}
-
-export function saveTheme(theme: 'light' | 'dark'): void {
-  try {
-    localStorage.setItem(THEME_KEY, theme);
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  } catch (error) {
-    console.error('Error saving theme:', error);
-  }
-}
