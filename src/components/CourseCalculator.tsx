@@ -23,19 +23,19 @@ export const CourseCalculator: React.FC<CourseCalculatorProps> = ({
   onSaveToGpaCalculator,
   addToast,
 }) => {
-  const [courseName, setCourseName] = useState('Web Engineering');
-  const [courseCode, setCourseCode] = useState('CSE333');
+  const [courseName, setCourseName] = useState('');
+  const [courseCode, setCourseCode] = useState('');
   const [creditHours, setCreditHours] = useState<number | ''>(3);
 
   const [marks, setMarks] = useState<CourseAssessmentMarks>({
-    attendance: 7,
-    quiz1: 14,
-    quiz2: 12,
-    quiz3: 15,
-    assignment: 5,
-    presentation: 8,
-    midTerm: 22,
-    finalExam: 36,
+    attendance: '',
+    quiz1: '',
+    quiz2: '',
+    quiz3: '',
+    assignment: '',
+    presentation: '',
+    midTerm: '',
+    finalExam: '',
   });
 
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -103,14 +103,14 @@ export const CourseCalculator: React.FC<CourseCalculatorProps> = ({
     setCourseCode('');
     setCreditHours(3);
     setMarks({
-      attendance: 0,
-      quiz1: 0,
-      quiz2: 0,
-      quiz3: 0,
-      assignment: 0,
-      presentation: 0,
-      midTerm: 0,
-      finalExam: 0,
+      attendance: '',
+      quiz1: '',
+      quiz2: '',
+      quiz3: '',
+      assignment: '',
+      presentation: '',
+      midTerm: '',
+      finalExam: '',
     });
     setTouched({});
     addToast('Fields reset', 'All course mark fields cleared', 'info');

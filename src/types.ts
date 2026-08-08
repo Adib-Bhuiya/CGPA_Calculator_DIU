@@ -50,7 +50,8 @@ export interface GpaCourseItem {
   credits: number;
   letterGrade: LetterGrade;
   gradePoint: number;
-  customMark?: number;
+  inputType?: 'grade' | 'marks';
+  customMark?: number | '';
 }
 
 export interface SemesterRecord {
