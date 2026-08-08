@@ -1,0 +1,6 @@
+{
+  "name": "CGPA Calculator DIU",
+  "description": "Comprehensive academic CGPA, GPA, and course mark calculator tailored for DIU university students with target predictor, mark distribution, and analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
