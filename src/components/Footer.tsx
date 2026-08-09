@@ -110,9 +110,15 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab }) => {
 
         <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
           <p>© {new Date().getFullYear()} CGPA Calculator DIU. Client-side LocalStorage Saved.</p>
-          <p className="flex items-center gap-1">
-            Built with <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" /> for DIU Students
-          </p>
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3">
+            <p className="font-semibold text-slate-700 dark:text-slate-300">
+              Built by <span className="text-indigo-600 dark:text-indigo-400 font-bold">Adib Bhuiyan</span>
+            </p>
+            <span className="hidden sm:inline">•</span>
+            <p className="flex items-center gap-1">
+              Built with <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" /> for DIU Students
+            </p>
+          </div>
         </div>
       </div>
     </footer>
