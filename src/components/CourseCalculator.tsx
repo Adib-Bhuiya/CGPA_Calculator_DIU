@@ -26,6 +26,7 @@ export const CourseCalculator: React.FC<CourseCalculatorProps> = ({
   const [courseName, setCourseName] = useState('');
   const [courseCode, setCourseCode] = useState('');
   const [creditHours, setCreditHours] = useState<number | ''>(3);
+  const [attendancePercent, setAttendancePercent] = useState<string>('');
 
   const [marks, setMarks] = useState<CourseAssessmentMarks>({
     attendance: '',
@@ -44,9 +45,15 @@ export const CourseCalculator: React.FC<CourseCalculatorProps> = ({
   const errors = useMemo(() => {
     const errs: Record<string, string> = {};
 
-    if (marks.attendance !== '' && (marks.attendance < 0 || marks.attendance > 7)) {
-      errs.attendance = 'Attendance mark must be between 0 and 7';
+    if (attendancePercent !== '') {
+      const num = parseFloat(attendancePercent);
+      if (isNaN(num)) {
+        errs.attendance = 'Please enter a valid attendance percentage';
+      } else if (num < 0 || num > 100) {
+        errs.attendance = 'Attendance percentage must be between 0% and 100%';
+      }
     }
+
     if (marks.quiz1 !== '' && (marks.quiz1 < 0 || marks.quiz1 > 15)) {
       errs.quiz1 = 'Quiz 1 mark must be between 0 and 15';
     }
@@ -73,7 +80,7 @@ export const CourseCalculator: React.FC<CourseCalculatorProps> = ({
     }
 
     return errs;
-  }, [marks, creditHours]);
+  }, [attendancePercent, marks, creditHours]);
 
   const isValid = Object.keys(errors).length === 0;
 
@@ -87,6 +94,26 @@ export const CourseCalculator: React.FC<CourseCalculatorProps> = ({
       marks
     );
   }, [courseName, courseCode, creditHours, marks, isValid]);
+
+  const handleAttendancePercentChange = (val: string) => {
+    setTouched((prev) => ({ ...prev, attendance: true }));
+    setAttendancePercent(val);
+
+    if (val === '') {
+      setMarks((prev) => ({ ...prev, attendance: '' }));
+      return;
+    }
+
+    const num = parseFloat(val);
+    if (isNaN(num)) {
+      setMarks((prev) => ({ ...prev, attendance: '' }));
+    } else if (num >= 0 && num <= 100) {
+      const calcMark = (num / 100) * 7;
+      setMarks((prev) => ({ ...prev, attendance: calcMark }));
+    } else {
+      setMarks((prev) => ({ ...prev, attendance: '' }));
+    }
+  };
 
   const handleMarkChange = (field: keyof CourseAssessmentMarks, val: string) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
@@ -102,6 +129,7 @@ export const CourseCalculator: React.FC<CourseCalculatorProps> = ({
     setCourseName('');
     setCourseCode('');
     setCreditHours(3);
+    setAttendancePercent('');
     setMarks({
       attendance: '',
       quiz1: '',
@@ -281,30 +309,82 @@ export const CourseCalculator: React.FC<CourseCalculatorProps> = ({
             </div>
           </div>
 
-          {/* OTHER 5 COMPONENTS */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Attendance (Max 7) */}
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Attendance (Max 7)
-                </label>
-                <span className="text-[10px] text-slate-400">Class presence</span>
-              </div>
-              <input
-                type="number"
-                min={0}
-                max={7}
-                step={0.5}
-                value={marks.attendance}
-                onChange={(e) => handleMarkChange('attendance', e.target.value)}
-                className={`w-full px-3 py-2 rounded-xl border bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-semibold focus:ring-2 focus:ring-indigo-500 outline-none ${
-                  errors.attendance ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700'
-                }`}
-              />
-              {errors.attendance && <p className="text-[10px] text-rose-500 mt-1">{errors.attendance}</p>}
+          {/* ATTENDANCE SECTION BOX */}
+          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                Attendance (Fixed Max 7 Marks)
+              </h3>
+              <span className="text-[11px] font-extrabold text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/80 px-2.5 py-0.5 rounded-full">
+                {attendancePercent !== '' && !errors.attendance && typeof marks.attendance === 'number'
+                  ? `${formatNumber(marks.attendance)} / 7 Marks`
+                  : '0.00 / 7 Marks'}
+              </span>
             </div>
 
+            <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+              Enter your attendance percentage directly. Attendance mark is automatically computed out of 7 marks using <code className="bg-white dark:bg-slate-900 px-1 py-0.5 rounded text-indigo-600 dark:text-indigo-400 font-mono">(Attendance % / 100) × 7</code>.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start pt-1">
+              {/* Input field */}
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Attendance Percentage (%)
+                </label>
+                <div className="relative flex items-center">
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    step="any"
+                    placeholder="e.g. 90"
+                    value={attendancePercent}
+                    onChange={(e) => handleAttendancePercentChange(e.target.value)}
+                    className={`w-full pl-3 pr-8 py-2 rounded-xl border bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-xs font-semibold focus:ring-2 focus:ring-indigo-500 outline-none ${
+                      errors.attendance ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700'
+                    }`}
+                  />
+                  <span className="absolute right-3 text-xs font-bold text-slate-400 pointer-events-none">
+                    %
+                  </span>
+                </div>
+                {errors.attendance && (
+                  <p className="text-[10px] text-rose-500 mt-1">{errors.attendance}</p>
+                )}
+              </div>
+
+              {/* Display card */}
+              <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex items-center justify-around text-center">
+                <div>
+                  <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                    Attendance Percentage
+                  </p>
+                  <p className="text-sm font-extrabold text-slate-900 dark:text-white mt-0.5">
+                    {attendancePercent !== '' && !errors.attendance
+                      ? `${attendancePercent}%`
+                      : '—'}
+                  </p>
+                </div>
+
+                <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />
+
+                <div>
+                  <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                    Attendance Mark
+                  </p>
+                  <p className="text-sm font-extrabold text-indigo-600 dark:text-indigo-400 mt-0.5">
+                    {attendancePercent !== '' && !errors.attendance && typeof marks.attendance === 'number'
+                      ? `${formatNumber(marks.attendance)} / 7`
+                      : '0.00 / 7'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* OTHER 4 ASSESSMENT COMPONENTS */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Assignment (Max 5) */}
             <div>
               <div className="flex items-center justify-between mb-1">
@@ -436,7 +516,7 @@ export const CourseCalculator: React.FC<CourseCalculatorProps> = ({
                   <div className="space-y-1.5 text-xs">
                     <div className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60">
                       <span className="text-slate-600 dark:text-slate-400">Attendance</span>
-                      <span className="font-bold text-slate-900 dark:text-white">{result.attendanceMark} / 7</span>
+                      <span className="font-bold text-slate-900 dark:text-white">{formatNumber(result.attendanceMark)} / 7</span>
                     </div>
 
                     <div className="p-2 rounded-lg bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/40">
