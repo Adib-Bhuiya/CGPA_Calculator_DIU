@@ -25,16 +25,18 @@ export function calculateQuizAverage(quiz1: number, quiz2: number, quiz3: number
  * Determine letter grade and grade point from numerical final mark (0 - 100)
  */
 export function getGradeFromMark(finalMark: number): GradeScaleItem {
-  const roundedMark = Math.round(finalMark * 100) / 100;
+  const mark = Number(finalMark);
+  if (isNaN(mark) || !isFinite(mark)) {
+    return DIU_GRADING_SCALE[DIU_GRADING_SCALE.length - 1]; // F
+  }
+  const roundedMark = Math.round(mark * 100) / 100;
   
   for (const scale of DIU_GRADING_SCALE) {
-    if (roundedMark >= scale.minMark && roundedMark <= scale.maxMark) {
+    if (roundedMark >= scale.minMark) {
       return scale;
     }
   }
   
-  // Default fallback for anything outside
-  if (roundedMark > 100) return DIU_GRADING_SCALE[0];
   return DIU_GRADING_SCALE[DIU_GRADING_SCALE.length - 1]; // F
 }
 
