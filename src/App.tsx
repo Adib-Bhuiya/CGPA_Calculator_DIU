@@ -39,20 +39,42 @@ export default function App() {
     action: () => {},
   });
 
-  // Automatically sync with operating system / browser light/dark theme preference
+  // Theme state: initialized from localStorage (if set) or system preference
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('diu_theme');
+      if (stored === 'light' || stored === 'dark') {
+        return stored;
+      }
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return 'light';
+  });
+
+  // Apply 'dark' class to document.documentElement and persist to localStorage
   useEffect(() => {
-    const applySystemTheme = (isDark: boolean) => {
-      if (isDark) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    try {
+      localStorage.setItem('diu_theme', theme);
+    } catch {
+      // Ignore storage errors in restricted contexts
+    }
+  }, [theme]);
+
+  // Sync with OS theme changes only if user has not stored a manual preference
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e: MediaQueryListEvent) => {
+      const hasStored = localStorage.getItem('diu_theme');
+      if (!hasStored) {
+        setTheme(e.matches ? 'dark' : 'light');
       }
     };
 
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    applySystemTheme(mediaQuery.matches);
-
-    const handler = (e: MediaQueryListEvent) => applySystemTheme(e.matches);
     if (mediaQuery.addEventListener) {
       mediaQuery.addEventListener('change', handler);
     } else {
@@ -66,6 +88,10 @@ export default function App() {
         mediaQuery.removeListener(handler);
       }
     };
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
   }, []);
 
   // Toast Helper
@@ -218,8 +244,9 @@ export default function App() {
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        onResetData={handleResetToSample}
         onClearData={handleClearAllData}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
 
       {/* Main Content View Container */}

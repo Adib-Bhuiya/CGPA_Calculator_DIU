@@ -9,8 +9,9 @@ import {
   PieChart,
   Menu,
   X,
-  RotateCcw,
   Trash2,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 export type NavTab =
@@ -25,15 +26,17 @@ export type NavTab =
 interface NavbarProps {
   activeTab: NavTab;
   setActiveTab: (tab: NavTab) => void;
-  onResetData: () => void;
   onClearData: () => void;
+  theme: 'light' | 'dark';
+  onToggleTheme: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   setActiveTab,
-  onResetData,
   onClearData,
+  theme,
+  onToggleTheme,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -84,12 +87,17 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex items-center gap-2">
             <div className="hidden sm:flex items-center gap-1.5">
               <button
-                onClick={onResetData}
+                onClick={onToggleTheme}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium transition-colors"
-                title="Load DIU Sample Data"
+                title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                aria-label={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               >
-                <RotateCcw className="w-3.5 h-3.5 text-indigo-500" />
-                <span>Sample Data</span>
+                {theme === 'dark' ? (
+                  <Sun className="w-3.5 h-3.5 text-amber-500" />
+                ) : (
+                  <Moon className="w-3.5 h-3.5 text-indigo-500" />
+                )}
+                <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
               </button>
               <button
                 onClick={onClearData}
@@ -139,12 +147,17 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Top Right Actions */}
           <div className="flex items-center gap-2.5">
             <button
-              onClick={onResetData}
+              onClick={onToggleTheme}
               className="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition-colors shadow-sm"
-              title="Load DIU Sample Data"
+              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              aria-label={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             >
-              <RotateCcw className="w-4 h-4 text-indigo-500" />
-              <span>Sample Data</span>
+              {theme === 'dark' ? (
+                <Sun className="w-4 h-4 text-amber-500" />
+              ) : (
+                <Moon className="w-4 h-4 text-indigo-500" />
+              )}
+              <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
             </button>
             <button
               onClick={onClearData}
@@ -203,13 +216,18 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="pt-2 mt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
             <button
               onClick={() => {
-                onResetData();
+                onToggleTheme();
                 setMobileMenuOpen(false);
               }}
               className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-medium text-slate-700 dark:text-slate-300"
+              aria-label={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             >
-              <RotateCcw className="w-3.5 h-3.5 text-indigo-500" />
-              <span>Load Sample</span>
+              {theme === 'dark' ? (
+                <Sun className="w-3.5 h-3.5 text-amber-500" />
+              ) : (
+                <Moon className="w-3.5 h-3.5 text-indigo-500" />
+              )}
+              <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
             </button>
             <button
               onClick={() => {
