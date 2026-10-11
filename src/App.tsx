@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Capacitor, PluginListenerHandle } from '@capacitor/core';
+import { App as CapApp } from '@capacitor/app';
 import { AcademicData, CourseCalculationResult, GpaCourseItem, SemesterRecord, ToastMessage } from './types';
 import {
   clearAcademicData,
@@ -10,6 +12,7 @@ import { NavTab, Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { ToastContainer } from './components/Toast';
 import { ConfirmModal } from './components/ConfirmModal';
+import { ExitConfirmDialog } from './components/ExitConfirmDialog';
 import { Dashboard } from './components/Dashboard';
 import { CourseCalculator } from './components/CourseCalculator';
 import { GpaCalculator } from './components/GpaCalculator';
@@ -38,6 +41,78 @@ export default function App() {
     description: '',
     action: () => {},
   });
+
+  // Android Exit Confirmation Dialog state
+  const [showExitDialog, setShowExitDialog] = useState(false);
+
+  // Keep navigation & modal state fresh in ref for the backButton listener
+  const navStateRef = useRef({
+    activeTab,
+    isConfirmModalOpen: confirmModal.isOpen,
+    isExitDialogOpen: showExitDialog,
+  });
+
+  useEffect(() => {
+    navStateRef.current = {
+      activeTab,
+      isConfirmModalOpen: confirmModal.isOpen,
+      isExitDialogOpen: showExitDialog,
+    };
+  }, [activeTab, confirmModal.isOpen, showExitDialog]);
+
+  // Hardware / system Back button handling for native Android only
+  useEffect(() => {
+    const isNativeAndroid = Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android';
+    if (!isNativeAndroid) {
+      return;
+    }
+
+    let listenerHandle: PluginListenerHandle | null = null;
+
+    const setupBackButton = async () => {
+      listenerHandle = await CapApp.addListener('backButton', () => {
+        const { activeTab: currentTab, isConfirmModalOpen, isExitDialogOpen } = navStateRef.current;
+
+        // 1. If exit dialog is already open, pressing back cancels/closes it
+        if (isExitDialogOpen) {
+          setShowExitDialog(false);
+          return;
+        }
+
+        // 2. If any other modal is open, back closes it
+        if (isConfirmModalOpen) {
+          setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+          return;
+        }
+
+        // 3. If on a secondary tab, back returns to the main dashboard screen
+        if (currentTab !== 'dashboard') {
+          setActiveTab('dashboard');
+          return;
+        }
+
+        // 4. On the main dashboard screen, prompt exit confirmation
+        setShowExitDialog(true);
+      });
+    };
+
+    setupBackButton();
+
+    return () => {
+      if (listenerHandle) {
+        listenerHandle.remove();
+      }
+    };
+  }, []);
+
+  const handleConfirmExit = useCallback(() => {
+    setShowExitDialog(false);
+    CapApp.exitApp();
+  }, []);
+
+  const handleCancelExit = useCallback(() => {
+    setShowExitDialog(false);
+  }, []);
 
   // Theme state: initialized from localStorage (if set) or system preference
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -310,6 +385,13 @@ export default function App() {
         description={confirmModal.description}
         onConfirm={confirmModal.action}
         onCancel={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+      />
+
+      {/* Android-Only Exit Confirmation Dialog */}
+      <ExitConfirmDialog
+        isOpen={showExitDialog}
+        onCancel={handleCancelExit}
+        onExit={handleConfirmExit}
       />
     </div>
   );
