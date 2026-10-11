@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">CGPA Calculator DIU</string>
+    <string name="title_activity_main">CGPA Calculator DIU</string>
+    <string name="package_name">com.adib.cgpacalculatordiu</string>
+    <string name="custom_url_scheme">com.adib.cgpacalculatordiu</string>
+</resources>
